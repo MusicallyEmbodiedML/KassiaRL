@@ -23,6 +23,7 @@ display APP_SRAM scr;
 bool core1_disable_systick = true;
 bool core1_separate_stack = true;
 
+const char FIRMWARE_NAME[] = "-- Sensor FX CARL --";
 
 uint32_t get_rosc_entropy_seed(int bits) {
     uint32_t seed = 0;
@@ -183,7 +184,7 @@ void setup()
         delay(1);
     }
 
-    scr.post("MEMLNaut: let's go!");
+    scr.post(FIRMWARE_NAME);
     add_repeating_timer_ms(-39, displayUpdate, NULL, &timerDisplay);
 
     Serial.println("Finished initialising core 0.");
