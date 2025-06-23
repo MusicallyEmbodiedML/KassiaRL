@@ -55,8 +55,8 @@ volatile bool APP_SRAM interface_ready = false;
 constexpr size_t kN_InputParams = 3;
 #else
 // KASSIA: set number of serial params
-const std::vector<size_t> kSensorIndexes = {2, 3, 4, 5};
-constexpr size_t kN_InputParams = 4;
+const std::vector<size_t> kSensorIndexes = {0, 1};
+constexpr size_t kN_InputParams = 2;
 #endif
 
 
@@ -113,12 +113,12 @@ void setup()
     // Setup interface with memory barrier protection
     WRITE_VOLATILE(interface_ready, true);
     // Bind interface after ensuring it's fully initialized
-    RLInterface->bind_RL_interface(scr); // Updated call
+    RLInterface->bind_RL_interface(scr, true); // Updated call
     Serial.println("Bound RL interface to MEMLNaut.");
     // Other UI init
-    MEMLNaut::Instance()->setRVGain1Callback([](float value) { // Does not need 'this' or 'scr_ref'
-        AudioDriver::setDACVolume(value);
-    });
+    // MEMLNaut::Instance()->setRVGain1Callback([](float value) { // Does not need 'this' or 'scr_ref'
+    //     AudioDriver::setDACVolume(value);
+    // });
 
 
     midi_interf = std::make_shared<MIDIInOut>();
