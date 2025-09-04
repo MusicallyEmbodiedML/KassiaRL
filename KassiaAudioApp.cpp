@@ -40,6 +40,7 @@ stereosample_t KassiaAudioApp::Process(const stereosample_t x)
     // Pitch shift transposition between -12 and +12 semitones
     float pitchshift_transpose = (smoothParams[12] * 24.f) - 12.f; // Scale to -12 to +12 semitones
     pitchshifter_.SetTransposition(pitchshift_transpose);
+    //pitchshifter_.SetTransposition(-5.f);
     // Set pitch shifter mix
     pitchshifter_mix_ = smoothParams[13] * 0.99f;
 

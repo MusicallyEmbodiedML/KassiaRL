@@ -56,7 +56,7 @@ volatile bool APP_SRAM interface_ready = false;
 constexpr size_t kN_InputParams = 3;
 #else
 // KASSIA: set number of serial params
-const std::vector<size_t> kSensorIndexes = {0, 1};
+const std::vector<size_t> kSensorIndexes = {2,3,4,5};
 constexpr size_t kN_InputParams = 2;
 #endif
 
@@ -69,6 +69,8 @@ inline bool __not_in_flash_func(displayUpdate)(__unused struct repeating_timer *
 
 void setup()
 {
+    set_sys_clock_khz(AudioDriver::GetSysClockSpeed(), true);
+
     Serial.begin(115200);
     //while (!Serial) {}
     Serial.println("Serial initialised.");
@@ -94,7 +96,7 @@ void setup()
     // fclose(fp);
 
     // Setup board
-    MEMLNaut::Initialize();
+    MEMLNaut::Initialize(true); // Pass 'true' to use old display
 
 #if !USE_JOYSTICK
     pio_uart = std::make_shared<UARTInput>(
@@ -127,33 +129,10 @@ void setup()
     midi_interf->SetMIDISendChannel(1);
     Serial.println("MIDI setup complete.");
     if (midi_interf) {
-        midi_interf->SetCCCallback([RLInterface] (uint8_t cc_number, uint8_t cc_value) { // Capture RLInterface
-            Serial.printf("MIDI CC %d: %d\n", cc_number, cc_value);
-            switch(cc_number) {
-                case 1:
-                {
-                    RLInterface->trigger_like(); // Updated call
-                    break;
-                }
-                case 2:
-                {
-                    RLInterface->trigger_dislike(); // Updated call
-                    break;
-                }
-                case 3:
-                {
-                    RLInterface->trigger_randomiseRL(); // Updated call
-                    break;
-                }
-                case 4:
-                {
-                    RLInterface->forgetMemory();
-                    Serial.println("Memory cleared.");
-                    scr.post("What am I? A teapot?");
-                    break;
-                }
-            };
-        });
+        RLInterface->bindMIDI(midi_interf);
+        Serial.println("Bound MIDI interface to RLInterface.");
+    } else {
+        Serial.println("Failed to bind MIDI interface.");
     }
 
     // PIO UART setup and callback
@@ -259,7 +238,7 @@ void setup1()
     }
 
     // Start audio driver
-    AudioDriver::Setup();
+    AudioDriver::Setup(audio_app->GetDriverConfig());
 
     WRITE_VOLATILE(core_1_ready, true);
     while (!READ_VOLATILE(core_0_ready)) {

@@ -23,7 +23,14 @@ public:
         smoothParams(kN_Params, 0)
      {}
 
-
+    AudioDriver::codec_config_t GetDriverConfig() const override {
+        return {
+            .mic_input = false,
+            .line_level = 7,
+            .mic_gain_dB = 0,
+            .output_volume = 0.95f
+        };
+    }
 
 
     stereosample_t Process(const stereosample_t x) override;
