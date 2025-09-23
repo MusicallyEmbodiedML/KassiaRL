@@ -9,6 +9,7 @@
 //#include "src/memllib/synth/maxiPAF.hpp"
 #include "hardware/structs/bus_ctrl.h"
 #include "src/memllib/utils/sharedMem.hpp"
+#include "src/memllib/utils/Maths.hpp"
 #include <VFS.h>
 #include <LittleFS.h>
 #include "src/memllib/interface/UARTInput.hpp"
@@ -140,11 +141,10 @@ void setup()
         // });
         pio_uart->SetCallback([RLInterface] (size_t sensor_index, float value) {
             // Find param index based on kSensorIndexes
-            auto it = std::find(kSensorIndexes.begin(), kSensorIndexes.end(), sensor_index);
-            if (it != kSensorIndexes.end()) {
-                size_t param_index = std::distance(kSensorIndexes.begin(), it);
-                Serial.printf("Sensor %zu: %f\n", sensor_index, value);
-                RLInterface->setState(param_index, value);
+            auto param_index = where(kSensorIndexes, sensor_index);
+            if (param_index >= 0) {
+                Serial.printf("Sensor %d: %f\n", sensor_index, value);
+                RLInterface->setState(static_cast<size_t>(param_index), value);
             } else {
                 Serial.printf("Invalid sensor index: %zu\n", sensor_index);
             }
@@ -182,18 +182,20 @@ void loop()
     static bool led_pulse = false;
     uint32_t current_time = millis();
 
+    // Poll UART continuously
+    if (pio_uart) {
+        pio_uart->Poll();
+    }
+    // Poll MIDI continuously
+    if (midi_interf) {
+        midi_interf->Poll();
+    }
+
     // 1ms tasks
     if (current_time - last_1ms >= 1) {
         // PIO UART reads
-        if (pio_uart) {
-            pio_uart->Poll();
-        }
         // MEMLNaut pots
         MEMLNaut::Instance()->loop();
-        // MIDI reads
-        if (midi_interf) {
-            midi_interf->Poll();
-        }
         last_1ms = current_time;
     }
 
