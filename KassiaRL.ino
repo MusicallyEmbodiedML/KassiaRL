@@ -1,6 +1,6 @@
 // #include "src/memllib/interface/InterfaceBase.hpp"
 #include "src/memllib/interface/MIDIInOut.hpp"
-#include "src/memllib/hardware/memlnaut/display.hpp"
+//#include "src/memllib/hardware/memlnaut/display.hpp"
 #include "src/memllib/audio/AudioAppBase.hpp"
 #include "src/memllib/audio/AudioDriver.hpp"
 #include "src/memllib/hardware/memlnaut/MEMLNaut.hpp"
@@ -18,7 +18,7 @@
 
 #define USE_JOYSTICK    0
 
-display APP_SRAM scr;
+//display APP_SRAM scr;
 
 bool core1_disable_systick = true;
 bool core1_separate_stack = true;
@@ -61,12 +61,6 @@ constexpr size_t kN_InputParams = 2;
 #endif
 
 
-struct repeating_timer APP_SRAM timerDisplay;
-inline bool __not_in_flash_func(displayUpdate)(__unused struct repeating_timer *t) {
-    scr.update();
-    return true;
-}
-
 void setup()
 {
     set_sys_clock_khz(AudioDriver::GetSysClockSpeed(), true);
@@ -79,7 +73,7 @@ void setup()
     LittleFS.begin();
     VFS.root(LittleFS);
 
-    scr.setup();
+    //scr.setup();
     bus_ctrl_hw->priority = BUSCTRL_BUS_PRIORITY_DMA_W_BITS |
         BUSCTRL_BUS_PRIORITY_DMA_R_BITS | BUSCTRL_BUS_PRIORITY_PROC1_BITS;
 
@@ -96,7 +90,7 @@ void setup()
     // fclose(fp);
 
     // Setup board
-    MEMLNaut::Initialize(true); // Pass 'true' to use old display
+    MEMLNaut::Initialize();
 
 #if !USE_JOYSTICK
     pio_uart = std::make_shared<UARTInput>(
@@ -116,7 +110,7 @@ void setup()
     // Setup interface with memory barrier protection
     WRITE_VOLATILE(interface_ready, true);
     // Bind interface after ensuring it's fully initialized
-    RLInterface->bind_RL_interface(scr, true); // Updated call
+    RLInterface->bind_RL_interface(true); // Updated call
     Serial.println("Bound RL interface to MEMLNaut.");
     // Other UI init
     // MEMLNaut::Instance()->setRVGain1Callback([](float value) { // Does not need 'this' or 'scr_ref'
@@ -163,8 +157,19 @@ void setup()
         delay(1);
     }
 
-    scr.post(FIRMWARE_NAME);
-    add_repeating_timer_ms(-39, displayUpdate, NULL, &timerDisplay);
+    //scr.post(FIRMWARE_NAME);
+    std::shared_ptr<MessageView> helpView = std::make_shared<MessageView>("Help");
+    helpView->post(FIRMWARE_NAME);
+    helpView->post("TA: Down: Forget replay memory");
+    helpView->post("MA: Up: Randomise actor");
+    helpView->post("MA: Down: Randomise critic");
+    helpView->post("MB: Up: Positive reward");
+    helpView->post("MB: Down: Negative reward");
+    helpView->post("Y: Optimisation rate");
+    helpView->post("Z: OU noise");
+    helpView->post("Joystick: Explore");
+    MEMLNaut::Instance()->disp->AddView(helpView);
+    MEMLNaut::Instance()->addSystemInfoView();
 
     Serial.println("Finished initialising core 0.");
 }
