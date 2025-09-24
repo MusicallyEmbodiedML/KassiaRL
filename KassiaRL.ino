@@ -214,7 +214,7 @@ void loop()
         // Pulse LED on
         digitalWrite(Pins::LED, HIGH);
         led_pulse = true;
-        Serial.println(".");
+        //Serial.println(".");
         last_1s = current_time;
     }
 }
