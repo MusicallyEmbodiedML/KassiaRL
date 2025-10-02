@@ -57,8 +57,8 @@ volatile bool APP_SRAM interface_ready = false;
 constexpr size_t kN_InputParams = 3;
 #else
 // KASSIA: set number of serial params
-const std::vector<size_t> kSensorIndexes = {2,3,4,5};
-constexpr size_t kN_InputParams = 2;
+const std::vector<size_t> kSensorIndexes = {0,1,2};
+constexpr size_t kN_InputParams = 3;
 #endif
 
 
@@ -214,7 +214,7 @@ void loop()
         // Pulse LED on
         digitalWrite(Pins::LED, HIGH);
         led_pulse = true;
-        //Serial.println(".");
+        Serial.println(".");
         last_1s = current_time;
     }
 }
